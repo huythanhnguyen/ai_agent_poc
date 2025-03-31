@@ -1,6 +1,10 @@
 // =====================================================================
 // Auth UI
 // =====================================================================
+import ToastService from './ToastService.js';
+import AuthService from './AuthService.js';
+import CartService from './CartService.js';
+import ChatUI from './ChatUI.js';
 const AuthUI = {
     authModal: null,
     loginForm: null,

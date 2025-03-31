@@ -1,6 +1,7 @@
 // =====================================================================
 // Product UI
 // =====================================================================
+import Utils from './Utils.js';
 const ProductUI = {
     productContainer: null,
     cartContainer: null,

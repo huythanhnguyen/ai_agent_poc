@@ -19,6 +19,10 @@ import HistoryService from './HistoryService.js';
 // =====================================================================
 // Main Application 
 // =====================================================================
+// Bắt lỗi import không tìm thấy
+window.addEventListener('error', function(event) {
+    console.error('Lỗi loading module:', event.filename, event.message);
+});
 document.addEventListener("DOMContentLoaded", function() {
     // DOM Elements
     const chatInput = document.getElementById("chat-input");

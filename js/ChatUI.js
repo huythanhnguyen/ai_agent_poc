@@ -1,6 +1,8 @@
 // =====================================================================
 // Chat UI
 // =====================================================================
+import Utils from './Utils.js';
+import AuthService from './AuthService.js';
 const ChatUI = {
     chatWindow: null,
     chatInput: null,

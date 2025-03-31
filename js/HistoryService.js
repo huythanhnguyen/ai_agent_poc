@@ -1,10 +1,16 @@
-// Tạo file js/history-service.js
+// js/HistoryService.js
 const HistoryService = {
     HISTORY_KEY: 'mm_search_history',
     MAX_HISTORY_ITEMS: 10,
     
     getSearchHistory() {
-        return Utils.getLocalStorageItem(this.HISTORY_KEY) || [];
+        try {
+            const history = localStorage.getItem(this.HISTORY_KEY);
+            return history ? JSON.parse(history) : [];
+        } catch (error) {
+            console.error("Error reading search history:", error);
+            return [];
+        }
     },
     
     addSearchTerm(term) {
@@ -26,14 +32,16 @@ const HistoryService = {
             history.pop();
         }
         
-        Utils.setLocalStorageItem(this.HISTORY_KEY, history);
+        localStorage.setItem(this.HISTORY_KEY, JSON.stringify(history));
     },
     
     clearHistory() {
-        Utils.removeLocalStorageItem(this.HISTORY_KEY);
+        localStorage.removeItem(this.HISTORY_KEY);
     },
     
     renderSearchSuggestions(container) {
+        if (!container) return;
+        
         const history = this.getSearchHistory();
         
         if (!history.length) {
@@ -61,6 +69,37 @@ const HistoryService = {
         
         container.innerHTML = html;
         container.style.display = 'block';
+    },
+    
+    setupSearchSuggestions(container, inputElement) {
+        if (!container || !inputElement) return;
+        
+        // Thiết lập event listener cho history items
+        container.addEventListener('click', (event) => {
+            if (event.target.classList.contains('history-item') || 
+                event.target.parentElement.classList.contains('history-item')) {
+                
+                const item = event.target.classList.contains('history-item') ? 
+                    event.target : event.target.parentElement;
+                
+                const term = item.getAttribute('data-term');
+                if (term && inputElement) {
+                    inputElement.value = term;
+                    container.style.display = 'none';
+                }
+            }
+            
+            // Xử lý nút xóa lịch sử
+            if (event.target.classList.contains('clear-history')) {
+                this.clearHistory();
+                container.style.display = 'none';
+            }
+        });
+        
+        // Hiển thị lịch sử ban đầu
+        this.renderSearchSuggestions(container);
+        
+        return true;
     }
 };
 

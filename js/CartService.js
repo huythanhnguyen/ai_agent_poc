@@ -1,6 +1,10 @@
 // =====================================================================
 // Cart Service
 // =====================================================================
+import CONFIG from './Config.js';
+import Utils from './Utils.js';
+import ApiService from './ApiService.js';
+
 const CartService = {
     _cartId: null,
     _guestCartId: null,

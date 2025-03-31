@@ -1,6 +1,7 @@
 // =====================================================================
 // Search Service
 // =====================================================================
+import ApiService from './ApiService.js';
 const SearchService = {
     async searchProduct(keyword) {
         try {
