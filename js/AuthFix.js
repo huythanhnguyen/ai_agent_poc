@@ -124,8 +124,9 @@ if (typeof AuthService !== 'undefined') {
     };
 }
 
-// 3. Cải thiện quy trình xử lý đăng nhập
-async function improvedHandleLogin() {
+// 3. Định nghĩa hàm cải thiện quy trình xử lý đăng nhập
+// Định nghĩa nó như một hàm global để có thể truy cập từ bất kỳ đâu
+window.improvedHandleLogin = async function() {
     const emailInput = document.getElementById("email");
     const passwordInput = document.getElementById("password");
     const checkoutToggle = document.getElementById("checkout-after-login");
@@ -220,23 +221,21 @@ async function improvedHandleLogin() {
             ToastService.error("Lỗi hệ thống: " + error.message);
         }
     }
-}
+};
 
-// Thay thế hàm handleLogin hiện tại hoặc gắn vào form đăng nhập
-if (typeof handleLogin !== 'undefined') {
-    console.log('Thay thế handleLogin với phiên bản cải tiến');
-    window.handleLogin = improvedHandleLogin;
-}
-
-// Gắn hàm cải tiến vào form đăng nhập
+// Đợi DOM load xong và gắn sự kiện
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         console.log('Gắn hàm đăng nhập cải tiến vào form');
-        loginForm.removeEventListener('submit', handleLogin);
+        
+        // Xóa bỏ đoạn gây lỗi, không tham chiếu đến handleLogin
+        // Thay vào đó, chỉ thêm hàm mới
+        
         loginForm.addEventListener('submit', function(event) {
             event.preventDefault();
-            improvedHandleLogin();
+            // Gọi hàm cải tiến
+            window.improvedHandleLogin();
         });
     }
 });
