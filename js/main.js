@@ -2,19 +2,20 @@
  * Mega Market Search Assistant
  * Cải tiến với đăng nhập đầu tiên và giao diện theo Open Web UI
  */
-
-import AuthService from './AuthService.js';
-import CartService from './CartService.js';
-import ChatUI from './ChatUI.js';
-import ProductUI from './ProductUI.js';
-import ApiService from './ApiService.js';
-import SearchService from './SearchService.js';
-import Utils from './Utils.js';
-import ToastService from './ToastService.js';
-import CONFIG from './Config.js';
-import AuthUI from './AuthUI.js';
-import HistoryService from './HistoryService.js';
-
+// js/main.js
+import {
+    Utils,
+    CONFIG,
+    ApiService,
+    ToastService,
+    AuthService,
+    CartService,
+    SearchService,
+    ChatUI,
+    ProductUI,
+    HistoryService,
+    AuthUI
+} from './index.js';
 
 // =====================================================================
 // Main Application 
