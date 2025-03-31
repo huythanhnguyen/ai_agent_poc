@@ -1,7 +1,7 @@
 // AuthService.js
-import CONFIG from './config.js';
-import Utils from './utils.js';
-import ApiService from './api-service.js';
+import CONFIG from './Config.js';
+import Utils from './Utils.js';
+import ApiService from './ApiService.js';
 
 const AuthService = {
     get isLoggedIn() {

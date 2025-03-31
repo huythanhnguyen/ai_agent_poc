@@ -1,5 +1,5 @@
 // ApiService.js
-import CONFIG from './config.js';
+import CONFIG from './Config.js';
 
 const ApiService = {
     async request(endpoint, method = 'GET', data = null, token = null) {
