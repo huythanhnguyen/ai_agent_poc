@@ -1,11 +1,11 @@
-// =====================================================================
-// API Service
-// =====================================================================
+// ApiService.js
+import CONFIG from './config.js';
+
 const ApiService = {
     async request(endpoint, method = 'GET', data = null, token = null) {
         const headers = { 
             'Content-Type': 'application/json',
-            'Store': 'b2c_10010_vi' // Add default store header for GraphQL requests
+            'Store': 'b2c_10010_vi'
         };
         
         if (token) {
@@ -137,6 +137,5 @@ const ApiService = {
         }
     }
 };
+
 export default ApiService;
-// =====================================================================
-// =====================================================================

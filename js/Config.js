@@ -1,4 +1,4 @@
-const Config = {
+const CONFIG = {
     API_URL: "http://192.168.10.147:5000", // Update this to your backend URL
     ECOMMERCE_URL: "https://online.mmvietnam.com",
     GEMINI_API_KEY: "AIzaSyA9FCEUZCfSUAceuTf-aFIrZA-g7-5nqng",
@@ -8,5 +8,5 @@ const Config = {
     CART_ID_KEY: 'mm_cart_id',
     API_TIMEOUT: 10000 // 10 seconds timeout for API calls
 };
-export default Config;
+export default CONFIG;
 //Config.js

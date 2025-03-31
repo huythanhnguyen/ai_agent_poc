@@ -11,10 +11,12 @@ import ApiService from './ApiService.js';
 import SearchService from './SearchService.js';
 import Utils from './Utils.js';
 import ToastService from './ToastService.js';
-import Config from './Config.js';
+import CONFIG from './Config.js';
 import AuthUI from './AuthUI.js';
 import HistoryService from './HistoryService.js';
 
+
+// =====================================================================
 // Main Application 
 // =====================================================================
 document.addEventListener("DOMContentLoaded", function() {
@@ -104,6 +106,12 @@ document.addEventListener("DOMContentLoaded", function() {
             throw new Error("Failed to initialize ProductUI");
         }
         
+        // Initial search history setup
+        const searchSuggestions = document.getElementById('search-suggestions');
+        if (searchSuggestions) {
+            HistoryService.setupSearchSuggestions(searchSuggestions, chatInput);
+        }
+        
         // Setup event listeners
         setupEventListeners();
         
@@ -147,7 +155,27 @@ document.addEventListener("DOMContentLoaded", function() {
                     handleSendMessage();
                 }
             });
+            
+            // Show history when focused
+            chatInput.addEventListener("focus", function() {
+                const searchSuggestions = document.getElementById('search-suggestions');
+                if (searchSuggestions) {
+                    HistoryService.renderSearchSuggestions(searchSuggestions);
+                    if (chatInput.value.length > 0) {
+                        searchSuggestions.style.display = 'block';
+                    }
+                }
+            });
         }
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener("click", function(event) {
+            const searchSuggestions = document.getElementById('search-suggestions');
+            if (searchSuggestions && !searchSuggestions.contains(event.target) && 
+                event.target.id !== 'chat-input') {
+                searchSuggestions.style.display = 'none';
+            }
+        });
         
         // Clear input on button click
         if (clearInput) {
@@ -162,6 +190,12 @@ document.addEventListener("DOMContentLoaded", function() {
             if (chatInput) {
                 chatInput.addEventListener("input", function() {
                     clearInput.style.display = chatInput.value.length > 0 ? "block" : "none";
+                    
+                    // Show/hide suggestions based on input
+                    const searchSuggestions = document.getElementById('search-suggestions');
+                    if (searchSuggestions) {
+                        searchSuggestions.style.display = chatInput.value.length > 0 ? 'block' : 'none';
+                    }
                 });
             }
         }
@@ -201,6 +235,39 @@ document.addEventListener("DOMContentLoaded", function() {
                     chatInput.value = action;
                     handleSendMessage();
                 }
+            }
+            
+            // History item click
+            if (event.target.classList.contains("history-item") || 
+                event.target.parentElement.classList.contains("history-item")) {
+                
+                const item = event.target.classList.contains("history-item") ? 
+                    event.target : event.target.parentElement;
+                
+                const term = item.getAttribute("data-term");
+                if (term) {
+                    chatInput.value = term;
+                    
+                    // Hide suggestions
+                    const searchSuggestions = document.getElementById('search-suggestions');
+                    if (searchSuggestions) {
+                        searchSuggestions.style.display = 'none';
+                    }
+                }
+            }
+            
+            // Clear history button
+            if (event.target.classList.contains("clear-history") || 
+                event.target.parentElement.classList.contains("clear-history")) {
+                HistoryService.clearHistory();
+                
+                // Hide suggestions
+                const searchSuggestions = document.getElementById('search-suggestions');
+                if (searchSuggestions) {
+                    searchSuggestions.style.display = 'none';
+                }
+                
+                ToastService.info("Lịch sử tìm kiếm đã được xóa");
             }
             
             // View product details
@@ -286,10 +353,19 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
         
+        // Add to search history
+        HistoryService.addSearchTerm(userMessage);
+        
         // Clear input and hide clear button
         chatInput.value = "";
         if (clearInput) {
             clearInput.style.display = "none";
+        }
+        
+        // Hide suggestions
+        const searchSuggestions = document.getElementById('search-suggestions');
+        if (searchSuggestions) {
+            searchSuggestions.style.display = 'none';
         }
         
         // Add user message to chat
@@ -329,14 +405,45 @@ document.addEventListener("DOMContentLoaded", function() {
             // Search products
             const searchResults = {};
             for (const keyword of keywords) {
+                // Show searching state
+                const searchingDiv = document.createElement('div');
+                searchingDiv.className = 'loading-container';
+                searchingDiv.innerHTML = `
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Đang tìm kiếm "${keyword}"...</div>
+                `;
+                
+                // Add to product container
+                ProductUI.productContainer.appendChild(searchingDiv);
+                ProductUI.showProductContainer();
+                
+                // Perform search
                 const result = await SearchService.searchProduct(keyword);
                 searchResults[keyword] = SearchService.processSearchResults(result);
+                
+                // Remove searching state
+                if (searchingDiv.parentNode) {
+                    searchingDiv.parentNode.removeChild(searchingDiv);
+                }
             }
             
             // Show search results
             ProductUI.renderProductResponse({ results: searchResults });
             
-            ChatUI.addBotMessageToChat("Đây là kết quả tìm kiếm sản phẩm của bạn. Bạn có thể xem chi tiết hoặc thêm vào giỏ hàng.");
+            // Add friendly message based on results
+            let hasProducts = false;
+            for (const keyword in searchResults) {
+                if (searchResults[keyword].total_count > 0) {
+                    hasProducts = true;
+                    break;
+                }
+            }
+            
+            if (hasProducts) {
+                ChatUI.addBotMessageToChat("Đây là kết quả tìm kiếm sản phẩm của bạn. Bạn có thể xem chi tiết hoặc thêm vào giỏ hàng.");
+            } else {
+                ChatUI.addBotMessageToChat("Xin lỗi, tôi không tìm thấy sản phẩm nào phù hợp. Vui lòng thử lại với từ khóa khác.", true);
+            }
             
         } catch (error) {
             console.error("Error processing message:", error);
@@ -350,8 +457,26 @@ document.addEventListener("DOMContentLoaded", function() {
             // Show typing indicator
             ChatUI.setTypingState(true);
             
+            // Show loading state
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading-container';
+            loadingDiv.innerHTML = `
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Đang tải thông tin sản phẩm...</div>
+            `;
+            
+            // Add to product container
+            ProductUI.productContainer.innerHTML = '';
+            ProductUI.productContainer.appendChild(loadingDiv);
+            ProductUI.showProductContainer();
+            
             // Get product details
             const result = await SearchService.getProductDetails(sku);
+            
+            // Remove loading state
+            if (loadingDiv.parentNode) {
+                loadingDiv.parentNode.removeChild(loadingDiv);
+            }
             
             if (result.error) {
                 ToastService.error("Không thể tải thông tin sản phẩm");
@@ -375,7 +500,33 @@ document.addEventListener("DOMContentLoaded", function() {
     
     async function addProductToCart(sku, quantity) {
         try {
+            // Add loading state to button
+            const addToCartBtn = document.querySelector(`.add-to-cart-btn[data-sku="${sku}"]`);
+            if (addToCartBtn) {
+                const originalContent = addToCartBtn.innerHTML;
+                addToCartBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                addToCartBtn.disabled = true;
+                
+                // Reset after 5 seconds even if error occurs
+                setTimeout(() => {
+                    addToCartBtn.innerHTML = originalContent;
+                    addToCartBtn.disabled = false;
+                }, 5000);
+            }
+            
             const result = await CartService.addToCart(sku, quantity);
+            
+            // Reset button state
+            if (addToCartBtn) {
+                addToCartBtn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    const originalText = addToCartBtn.classList.contains('full-width') ? 
+                        '<i class="fas fa-shopping-cart"></i> Thêm vào giỏ hàng' : 
+                        '<i class="fas fa-shopping-cart"></i>';
+                    addToCartBtn.innerHTML = originalText;
+                    addToCartBtn.disabled = false;
+                }, 1000);
+            }
             
             if (result.error) {
                 ToastService.error(result.error);
@@ -390,6 +541,15 @@ document.addEventListener("DOMContentLoaded", function() {
             
             await updateCartDisplay();
             ToastService.success("Sản phẩm đã được thêm vào giỏ hàng");
+            
+            // Add animation to cart icon
+            const cartIconEl = document.getElementById('cart-icon');
+            if (cartIconEl) {
+                cartIconEl.classList.add('cart-animation');
+                setTimeout(() => {
+                    cartIconEl.classList.remove('cart-animation');
+                }, 1000);
+            }
         } catch (error) {
             console.error("Error adding to cart:", error);
             ToastService.error("Lỗi khi thêm sản phẩm vào giỏ hàng");
@@ -404,7 +564,26 @@ document.addEventListener("DOMContentLoaded", function() {
                 await initializeCart();
             }
             
+            // Show loading state
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading-container';
+            loadingDiv.innerHTML = `
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Đang tải giỏ hàng...</div>
+            `;
+            
+            // Add to cart container
+            ProductUI.cartContainer.innerHTML = '<h4>Giỏ hàng của bạn</h4>';
+            ProductUI.cartContainer.appendChild(loadingDiv);
+            ProductUI.showCartContainer();
+            
             const cartData = await CartService.getCart();
+            
+            // Remove loading state
+            if (loadingDiv.parentNode) {
+                loadingDiv.parentNode.removeChild(loadingDiv);
+            }
+            
             ProductUI.renderCartView(cartData);
             ProductUI.showCartContainer();
             
@@ -465,20 +644,60 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             
             // User is logged in, proceed to checkout
+            // Show loading button
+            const checkoutBtn = document.getElementById('checkout-btn');
+            if (checkoutBtn) {
+                const originalText = checkoutBtn.innerHTML;
+                checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+                checkoutBtn.disabled = true;
+                
+                // Reset after 10 seconds even if error occurs
+                setTimeout(() => {
+                    checkoutBtn.innerHTML = originalText;
+                    checkoutBtn.disabled = false;
+                }, 10000);
+            }
+            
             const checkoutUrl = await CartService.getCheckoutUrl();
             
             if (checkoutUrl) {
+                // Reset button
+                if (checkoutBtn) {
+                    checkoutBtn.innerHTML = '<i class="fas fa-check"></i> Đang chuyển hướng...';
+                }
+                
                 // Open checkout in new tab
                 window.open(checkoutUrl, '_blank');
                 
                 // Add message to chat
                 ChatUI.addBotMessageToChat("Đang chuyển hướng đến trang thanh toán. Vui lòng hoàn tất thanh toán trên trang web Mega Market.");
+                
+                // Reset button after 2 seconds
+                setTimeout(() => {
+                    if (checkoutBtn) {
+                        checkoutBtn.innerHTML = 'Thanh toán';
+                        checkoutBtn.disabled = false;
+                    }
+                }, 2000);
             } else {
                 ToastService.error("Không thể bắt đầu thanh toán");
+                
+                // Reset button
+                if (checkoutBtn) {
+                    checkoutBtn.innerHTML = 'Thanh toán';
+                    checkoutBtn.disabled = false;
+                }
             }
         } catch (error) {
             console.error("Checkout error:", error);
             ToastService.error("Lỗi khi bắt đầu thanh toán");
+            
+            // Reset button
+            const checkoutBtn = document.getElementById('checkout-btn');
+            if (checkoutBtn) {
+                checkoutBtn.innerHTML = 'Thanh toán';
+                checkoutBtn.disabled = false;
+            }
         }
     }
     

@@ -1,6 +1,4 @@
-// =====================================================================
-// Toast Notification System
-// =====================================================================
+// ToastService.js
 const ToastService = {
     container: null,
     defaultDuration: 3000,
@@ -102,6 +100,5 @@ const ToastService = {
         return this.show(message, 'info', duration);
     }
 };
+
 export default ToastService;
-// toast.js
-// =====================================================================

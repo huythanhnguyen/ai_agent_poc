@@ -1,8 +1,9 @@
-// auth-service.js
+// AuthService.js
+import CONFIG from './config.js';
+import Utils from './utils.js';
+import ApiService from './api-service.js';
+
 const AuthService = {
-// =====================================================================
-// Authentication Service
-// =====================================================================
     get isLoggedIn() {
         return !!this.getToken();
     },

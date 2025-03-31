@@ -1,6 +1,4 @@
-// =====================================================================
-// Utility Functions
-// =====================================================================
+// utils.js
 const Utils = {
     formatPrice(price) {
         return new Intl.NumberFormat('vi-VN').format(price);
@@ -49,3 +47,5 @@ const Utils = {
         }
     }
 };
+
+export default Utils;
