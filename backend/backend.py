@@ -430,6 +430,10 @@ auth_service = AuthService()
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
+@app.route('/ping', methods=['GET'])
+def ping():
+    return jsonify({"status": "ok", "message": "Server is running"})
+
 # Product routes
 @app.route('/search', methods=['POST'])
 def search_product():

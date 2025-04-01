@@ -1,6 +1,6 @@
 // Cải thiện ApiService để xử lý timeout tốt hơn
 // Thêm đoạn code này vào file ApiService.js hoặc cuối file main.js
-
+import CONFIG from './Config.js';
 (function() {
     // Đảm bảo các biến cần thiết tồn tại
     if (typeof window.CONFIG === 'undefined') {
