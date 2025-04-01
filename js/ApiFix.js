@@ -6,7 +6,7 @@
     if (typeof window.CONFIG === 'undefined') {
         console.warn('CONFIG không tồn tại, tạo CONFIG mặc định');
         window.CONFIG = {
-            API_URL: "http://192.168.10.147:5000",
+            API_URL: "https://ai-agent-backend-18ql.onrender.com",
             API_TIMEOUT: 20000 // 20 seconds
         };
     }

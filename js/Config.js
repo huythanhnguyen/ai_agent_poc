@@ -1,5 +1,5 @@
 const CONFIG = {
-    API_URL: "http://192.168.10.147:5000", // Update this to your backend URL
+    API_URL: "https://ai-agent-backend-18ql.onrender.com", // Update this to your backend URL
     ECOMMERCE_URL: "https://online.mmvietnam.com",
     GEMINI_API_KEY: "AIzaSyA9FCEUZCfSUAceuTf-aFIrZA-g7-5nqng",
     AUTH_TOKEN_KEY: 'mm_auth_token',
